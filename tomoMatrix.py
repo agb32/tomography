@@ -152,12 +152,12 @@ def populateNgsCovMat(nxSubaps, sep, subapDiam, map_size, max_sep, pupilMask, to
                         if pupilMask[x2,y2]:
                             
                             #Find the seperation between the 2 sub-aps
-                            dx = numba.float32((x2-x1)*subapDiam + sep[0])
-                            dy = numba.float32((y2-y1)*subapDiam + sep[1])
+                            dx = numba.float64((x2-x1)*subapDiam + sep[0])
+                            dy = numba.float64((y2-y1)*subapDiam + sep[1])
             
                             #Find the index in the covMap for seperations
-                            ix = numba.int32(round(dx*(map_size/2.)/max_sep +map_size/2.))
-                            iy = numba.int32(round(dy*(map_size/2.)/max_sep +map_size/2.))
+                            ix = numba.int64(round(dx*(map_size/2.)/max_sep +map_size/2.))
+                            iy = numba.int64(round(dy*(map_size/2.)/max_sep +map_size/2.))
             
                             #Get the index to put into the covMat
                             #i = x1*nxSubaps+y1
@@ -185,7 +185,7 @@ def populateNgsCovMat(nxSubaps, sep, subapDiam, map_size, max_sep, pupilMask, to
     
     return covMat
 
-def optNgsCovMat(params, rawCovMat, nxSubaps, subapDiam, pupilMask, img=None):
+def optNgsCovMat(params, rawCovMat, nxSubaps, subapDiam, pupilMask, ax=None):
     
 #(nxSubaps, subapDiam, pupilMask, r0, sep, wvl=500e-9, L0=None, l0=None, map_size=80):
 
@@ -195,15 +195,15 @@ def optNgsCovMat(params, rawCovMat, nxSubaps, subapDiam, pupilMask, img=None):
 
     rmsError = numpy.sqrt( ((rawCovMat - theoCovMat)**2).mean())
 
-    if img!=None:
-        img.set_data(theoCovMat)
-        img.get_figure().canvas.draw()
-    time.sleep(0.1)
+    if ax!=None:
+        ax.imshow(theoCovMat, origin="lower")
+        pyplot.pause(0.5)
+        print("PLOT!")
 
     print("RMS Error:{}\n\n".format(rmsError))
     return rmsError
 
-def optNgsCovMat2(params, rawCovMat, nxSubaps, subapDiam, pupilMask, img=None):
+def optNgsCovMat2(params, rawCovMat, nxSubaps, subapDiam, pupilMask, ax=None):
     
 #(nxSubaps, subapDiam, pupilMask, r0, sep, wvl=500e-9, L0=None, l0=None, map_size=80):
 
@@ -212,12 +212,21 @@ def optNgsCovMat2(params, rawCovMat, nxSubaps, subapDiam, pupilMask, img=None):
             nxSubaps, subapDiam, pupilMask, params[2], numpy.array([params[0], params[1]]))
 
     rmsError = numpy.sqrt( ((rawCovMat - theoCovMat)**2).mean())
+
+    print("ax:{}", ax)
+    if ax!=None:
+        ax.get_figure().clear()
+        img = ax.imshow(theoCovMat, origin="lower")
+        #img.colorbar()
+        pyplot.pause(0.5)
+        print("PLOT!")
 
     print("RMS Error: {}".format(rmsError))
     return ((rawCovMat - theoCovMat)**2).flatten()
 
 
-def fitNgsCovMat(rawCovMat, nxSubaps, subapDiam, pupilMask, r01, sep1, L01):
+def fitNgsCovMat(
+        rawCovMat, nxSubaps, subapDiam, pupilMask, r01, sep1, L01, plot=False):
     
     pyplot.ion()
     # fig = pyplot.figure()
@@ -235,15 +244,81 @@ def fitNgsCovMat(rawCovMat, nxSubaps, subapDiam, pupilMask, r01, sep1, L01):
     #         tol=1e-30,
     #         )
 
-    opt_result = root(
-            optNgsCovMat2, guess, 
-            args=(rawCovMat, nxSubaps, subapDiam, pupilMask),
-            method="lm",
-            # options={   "disp":True,
-            #             "eps":0.2},
-            # bounds=[(None,None), (None,None), (0,None)],
-            tol=1e-20,
+    if plot:
+        pyplot.ion()
+        fig = pyplot.figure()
+        ax = fig.add_subplot(111)
+        opt_result = root(
+                optNgsCovMat2, guess, 
+                args=(rawCovMat, nxSubaps, subapDiam, pupilMask, ax),
+                method="lm",
+                # options={   "disp":True,
+                #             "eps":0.2},
+                # bounds=[(None,None), (None,None), (0,None)],
+                tol=1e-30,
+                )
+    else:
+        opt_result = root(
+                optNgsCovMat2, guess, 
+                args=(rawCovMat, nxSubaps, subapDiam, pupilMask),
+                method="lm",
+                # options={   "disp":True,
+                #             "eps":0.2},
+                # bounds=[(None,None), (None,None), (0,None)],
+                tol=1e-30,
+                )
+            
+    print(opt_result)
+    
+    fittedCovMat = makeNgsCovMat(
+            nxSubaps, subapDiam, pupilMask, opt_result.x[2],
+            numpy.array([opt_result.x[0], opt_result.x[1]])
             )
+            
+    return fittedCovMat
+
+def fitNgsCovMat_minimise(
+        rawCovMat, nxSubaps, subapDiam, pupilMask, r01, sep1, L01, plot=False):
+    
+    pyplot.ion()
+    # fig = pyplot.figure()
+    # ax = fig.add_subplot(111)
+    # img = ax.imshow(numpy.zeros(rawCovMat.shape))
+
+    guess = numpy.array([sep1[0], sep1[1], r01])
+    # opt_result = minimize(
+    #         optNgsCovMat, guess, 
+    #         args=(rawCovMat, nxSubaps, subapDiam, pupilMask),
+    #         method="SLSQP",
+    #         options={   "disp":True,
+    #                     "eps":0.2},
+    #         bounds=[(None,None), (None,None), (0,None)],
+    #         tol=1e-30,
+    #         )
+
+    if plot:
+        pyplot.ion()
+        fig = pyplot.figure()
+        ax = fig.add_subplot(111)
+        opt_result = minimize(
+                optNgsCovMat, guess, 
+                args=(rawCovMat, nxSubaps, subapDiam, pupilMask, ax),
+                method="Nelder-Mead",
+                # options={   "disp":True,
+                #             "eps":0.2},
+                # bounds=[(None,None), (None,None), (0,None)],
+                tol=1e-30,
+                )
+    else:
+        opt_result = root(
+                optNgsCovMat, guess, 
+                args=(rawCovMat, nxSubaps, subapDiam, pupilMask),
+                method="Nelder-Mead",
+                # options={   "disp":True,
+                #             "eps":0.2},
+                # bounds=[(None,None), (None,None), (0,None)],
+                tol=1e-30,
+                )
             
     print(opt_result)
     
