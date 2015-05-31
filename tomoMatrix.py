@@ -216,16 +216,16 @@ def optNgsCovMat2(params, rawCovMat, nxSubaps, subapDiam, pupilMask, ax=None):
     print("ax:{}", ax)
     if ax!=None:
         ax.get_figure().clear()
-        img = ax.imshow(theoCovMat, origin="lower")
+        ax.imshow(theoCovMat, origin="lower")
         #img.colorbar()
-        pyplot.pause(0.5)
+        pyplot.pause(0.1)
         print("PLOT!")
 
     print("RMS Error: {}".format(rmsError))
     return ((rawCovMat - theoCovMat)**2).flatten()
 
 
-def fitNgsCovMat(
+def fitNgsCovMat_root(
         rawCovMat, nxSubaps, subapDiam, pupilMask, r01, sep1, L01, plot=False):
     
     pyplot.ion()
