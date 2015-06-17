@@ -36,7 +36,7 @@ def makeFourierCovMap( N, D, r0, subapDiam, L0=None, l0=None):
 
     covMaps = numpy.zeros((3, N, N))
 
-    coords = numpy.linspace(-1./D, 1./D, N)
+    coords = numpy.linspace(-1./D, 1./D, N+1)[:-1]
     kx, ky = numpy.meshgrid(coords, coords)
 
     k = numpy.sqrt(kx**2 + ky**2)
@@ -185,7 +185,9 @@ def populateNgsCovMat(nxSubaps, sep, subapDiam, map_size, max_sep, pupilMask, to
     
     return covMat
 
-def optNgsCovMat(params, rawCovMat, nxSubaps, subapDiam, pupilMask, ax=None):
+def optNgsCovMat_min(
+        params, rawCovMat, nxSubaps, subapDiam, pupilMask, ax=None, 
+        errorPlot=None):
     
 #(nxSubaps, subapDiam, pupilMask, r0, sep, wvl=500e-9, L0=None, l0=None, map_size=80):
 
@@ -196,14 +198,21 @@ def optNgsCovMat(params, rawCovMat, nxSubaps, subapDiam, pupilMask, ax=None):
     rmsError = numpy.sqrt( ((rawCovMat - theoCovMat)**2).mean())
 
     if ax!=None:
+        fig = ax.get_figure()
+        fig.clear()
+        ax = fig.add_subplot(111)
         ax.imshow(theoCovMat, origin="lower")
-        pyplot.pause(0.5)
-        print("PLOT!")
+        fig.colorbar(ax.get_images()[0], ax=ax)
+
+        pyplot.pause(0.1)
+
 
     print("RMS Error:{}\n\n".format(rmsError))
     return rmsError
 
-def optNgsCovMat2(params, rawCovMat, nxSubaps, subapDiam, pupilMask, ax=None):
+def optNgsCovMat_root(
+        params, rawCovMat, nxSubaps, subapDiam, pupilMask, ax=None,
+        errorPlot=None):
     
 #(nxSubaps, subapDiam, pupilMask, r0, sep, wvl=500e-9, L0=None, l0=None, map_size=80):
 
@@ -215,13 +224,15 @@ def optNgsCovMat2(params, rawCovMat, nxSubaps, subapDiam, pupilMask, ax=None):
 
     print("ax:{}", ax)
     if ax!=None:
-        ax.get_figure().clear()
+        fig = ax.get_figure()
+        fig.clear()
+        ax = fig.add_subplot(111)
         ax.imshow(theoCovMat, origin="lower")
-        #img.colorbar()
-        pyplot.pause(0.1)
-        print("PLOT!")
+        fig.colorbar(ax.get_images()[0], ax=ax)
 
-    print("RMS Error: {}".format(rmsError))
+        pyplot.pause(0.1)
+
+    print("RMS Error: {}\n\n".format(rmsError))
     return ((rawCovMat - theoCovMat)**2).flatten()
 
 
@@ -246,10 +257,19 @@ def fitNgsCovMat_root(
 
     if plot:
         pyplot.ion()
+        figRaw = pyplot.figure()
+        axRaw = figRaw.add_subplot(111)
+        imgRaw = axRaw.imshow(rawCovMat, origin="lower")
+        figRaw.colorbar(imgRaw, ax=axRaw)
+        axRaw.set_title("Raw Covariance Matrix")
+
         fig = pyplot.figure()
         ax = fig.add_subplot(111)
+        img = ax.imshow(rawCovMat, origin="lower")
+        fig.colorbar(img, ax=ax)
+
         opt_result = root(
-                optNgsCovMat2, guess, 
+                optNgsCovMat_root, guess, 
                 args=(rawCovMat, nxSubaps, subapDiam, pupilMask, ax),
                 method="lm",
                 # options={   "disp":True,
@@ -259,7 +279,7 @@ def fitNgsCovMat_root(
                 )
     else:
         opt_result = root(
-                optNgsCovMat2, guess, 
+                optNgsCovMat_root, guess, 
                 args=(rawCovMat, nxSubaps, subapDiam, pupilMask),
                 method="lm",
                 # options={   "disp":True,
@@ -298,26 +318,32 @@ def fitNgsCovMat_minimise(
 
     if plot:
         pyplot.ion()
+        figRaw = pyplot.figure()
+        axRaw = figRaw.add_subplot(111)
+        imgRaw = axRaw.imshow(rawCovMat, origin="lower")
+        figRaw.colorbar(imgRaw, ax=axRaw)
+        axRaw.set_title("Raw Covariance Matrix")
+
         fig = pyplot.figure()
         ax = fig.add_subplot(111)
         opt_result = minimize(
-                optNgsCovMat, guess, 
+                optNgsCovMat_min, guess, 
                 args=(rawCovMat, nxSubaps, subapDiam, pupilMask, ax),
-                method="Nelder-Mead",
+                method="Powell",
                 # options={   "disp":True,
                 #             "eps":0.2},
                 # bounds=[(None,None), (None,None), (0,None)],
-                tol=1e-30,
+                tol=1e-20,
                 )
     else:
-        opt_result = root(
-                optNgsCovMat, guess, 
+        opt_result = minimize(
+                optNgsCovMat_min, guess, 
                 args=(rawCovMat, nxSubaps, subapDiam, pupilMask),
-                method="Nelder-Mead",
+                method="Powell",
                 # options={   "disp":True,
                 #             "eps":0.2},
                 # bounds=[(None,None), (None,None), (0,None)],
-                tol=1e-30,
+                tol=1e-20,
                 )
             
     print(opt_result)
@@ -328,6 +354,8 @@ def fitNgsCovMat_minimise(
             )
             
     return fittedCovMat
+
+
 
 #######################
 #Old functions
