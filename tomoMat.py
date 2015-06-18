@@ -4,7 +4,7 @@ import numpy
 
 def matcov(
         nWfs, nSubaps, nxSubaps, subapDiam, subapPos, gsAlt, gsPos, nLayers,
-        layerHeights, cn2, L0, covMatPart, data, pupilOffset=None, 
+        layerHeights, cn2, L0, data, covMatPart=0 , pupilOffset=None, 
         gsMag=None, wfsRot=None):
 
 
@@ -37,7 +37,7 @@ def matcov(
     # Find the total number of slopes
     totSlopes = 0
     for i in range(nWfs):
-        totSlopes += nSubaps[i]
+        totSlopes += nSubaps[i]*2
 
     if covMatPart==0:
         m0 = 0
@@ -66,10 +66,11 @@ def matcov(
         Ni = nSubaps[m] + ioff
 
         # Loop over WFS 2
-        for n in range(n0, nf+1):
+        # Breaks covMatPart=3
+        for n in range(n0, m+1):
 
             off_XY = nSubaps[n]
-            off_YX = nSubaps[m] * nLayers
+            off_YX = nSubaps[m] * NL
             off_YY = off_XY + off_YX
 
             Nj = nSubaps[n] + joff
@@ -114,6 +115,13 @@ def matcov(
                             caa_xy += cov[2]
 
                     i0 = i*NL + j
+
+                    print("i: {}, j: {}, i0: {}, NL: {}".format(i, j,i0, NL))
+                    print("off_XY: {}, off_YX: {}, off_YY:{}".format(
+                            off_XY, off_YX, off_YY))
+                    print("caa_xx: {:.3f}, caa_yy: {:.3f}, caa_xy: {:.3f}\n".format(
+                            caa_xx, caa_yy, caa_xy ))
+
                     data[i0] = caa_xx
                     data[i0 + off_XY] = caa_xy
                     data[i0 + off_YX] = caa_xy
@@ -123,25 +131,25 @@ def matcov(
         ioff = ioff + 2*nSubaps[m]
         joff = 0
 
-    if covMatPart==0 or covMatPart==1:
-        size = NL - 1
-        matL = data[1:]
-        matU = data[NL:]
+    # if covMatPart==0 or covMatPart==1:
+    #     size = NL - 1
+    #     matL = data[1:]
+    #     matU = data[NL:]
 
-    for j in range(size):
-        matL += NL + 1
-        matU += NL + 1
-        size -= 1
+    # for j in range(size):
+    #     matL += NL + 1
+    #     matU += NL + 1
+    #     size -= 1
 
-        if size>0:
-            break
+    #     if size>0:
+    #         break
 
-    return data
+    return data.reshape((totSlopes, totSlopes))
 
 
 def subap_position(
         nWfs, nSubaps, nxSubaps, gsAlt, gsPos, subapPos, 
-        nLayers, layerHeights, pupilOffset=None, gsMag=1, wfsRot=0):
+        nLayers, layerHeights, pupilOffset=None, gsMag=None, wfsRot=None):
     
     rad = numpy.pi / 180.
 
@@ -161,14 +169,20 @@ def subap_position(
             rr = 1. - layerHeights[l] * gsAlt[n]
 
             # Magnification 
-            G = float(gsMag) / nxSubaps[n]
+            if gsMag!=None:
+                G = float(gsMag[n]) / nxSubaps[n]
+            else:
+                G = 1./nxSubaps[n]
 
             # Rotation angle 
-            th = wfsRot * rad
+            if wfsRot!=None:
+                th = wfsRot[n] * rad
+            else:
+                th = 0
 
             for i in range(nSubaps[n]):
-                xtp = subapPos[0][ioff + i] * G
-                ytp = subapPos[1][ioff + i] * G
+                xtp = subapPos[0, ioff + i] * G
+                ytp = subapPos[1, ioff + i] * G
 
                 uu = xtp * numpy.cos(th) - ytp * numpy.sin(th)
                 vv = xtp * numpy.sin(th) + ytp * numpy.cos(th)
@@ -180,7 +194,7 @@ def subap_position(
                 u[n, i, l] = uu*rr + dX
                 v[n, i, l] = vv*rr + dY
             ioff += nSubaps[n]
-    return u, v
+    return numpy.array([u, v])
 
 
 def compute_cov(du, dv, ac, ad, bc, bd, s1, s2, L0, units):
@@ -221,7 +235,7 @@ def compute_cov(du, dv, ac, ad, bc, bd, s1, s2, L0, units):
 
     cov[0] = cov_xx
     cov[1] = cov_yy
-    cov[3] = cov_xy
+    cov[2] = cov_xy
 
     return cov
 

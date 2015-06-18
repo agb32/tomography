@@ -21,7 +21,6 @@
 
 void
 matcov_styc(struct tomo_struct tomo, double *data) {
-  printf("Into matcov function!");
 
   const long cNw = tomo.Nw;
   const long cNlayer = tomo.Nlayer;
@@ -31,10 +30,9 @@ matcov_styc(struct tomo_struct tomo, double *data) {
   // %%%%%%% Computation of the sub-apertures positions and sizes %%%%%%%%%%%
  // u, v :arrays containing all the sub-apertures coordinates of all WFS, one after the other
   // u[0][1][3] is the X-coordinate of subap number 3 of wfs number 0 at altitude 3
-  printf("Just about to maolloc stuff...");
   double*** u = arr3dAlloc( cNw, tomo.Nsubap, cNlayer);
   double*** v = arr3dAlloc( cNw, tomo.Nsubap, cNlayer);
-  printf("Malloced successfully!");
+
 
   //Computes  u and v
    subap_position(tomo, u, v);
@@ -158,6 +156,7 @@ matcov_styc(struct tomo_struct tomo, double *data) {
 	      caa_yy += cov[1];
 	      caa_xy += cov[2];
 
+
 	      free(cov);
 	      }
 	  }
@@ -167,6 +166,10 @@ matcov_styc(struct tomo_struct tomo, double *data) {
 	  data[i0 + off_XY] = caa_xy;   //xy
 	  data[i0 + off_YX] = caa_xy;   //yx
 	  data[i0 + off_YY] = caa_yy; //yy
+
+    printf("i: %li, j: %li, i0: %li, NL: %li\n", i, j, i0, NL);
+    printf("off_XY: %li, off_YX: %li, off_YY: %li\n", off_XY, off_YX, off_YY);
+    printf("caa_xx: %.3f, caa_yy: %.3f, caa_xy: %.3f\n\n", caa_xx, caa_yy, caa_xy);
 
 	}
       }
