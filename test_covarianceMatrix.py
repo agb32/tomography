@@ -1,4 +1,4 @@
-import tomoMat
+import covarianceMatrix
 import numpy
 import unittest
 
@@ -84,20 +84,14 @@ class TestCovMat(unittest.TestCase):
 
 
     def testCovMat(self):
-        totElements = (2*NSUBAPS.sum())**2
-        covMat = numpy.zeros(totElements, dtype="float64")
+        covMat = numpy.zeros(
+                (2*nSubaps.sum(), 2*nSubaps.sum()), dtype="float64")
 
         covMat = tomoMat.matcov(
                 NWFS, NSUBAPS, NXSUBAPS, SUBAP_DIAM, SUBAP_POS, GSALT, GSPOS,
                 NLAYERS, LAYER_HEIGHTS, CN2, L0, covMat)
 
-        print(numpy.array_str(covMat.reshape(NSUBAPS*2, NSUBAPS*2), precision=4))
-        print(numpy.array_str(COVMAT_RESULT, precision=4))
 
-        diff = COVMAT_RESULT - covMat
-
-        print (abs(diff).max())
-        print(numpy.array_str(diff, precision=4))
         self.assertTrue(numpy.allclose(covMat, COVMAT_RESULT, atol=0.001))
         return covMat
 
@@ -112,15 +106,3 @@ class TestCovMat(unittest.TestCase):
 
 
 
-if __name__=="__main__":
-
-    print("\nTest subap_position:")
-    subapPos = test_subapPosition()
-    print("subapPos:")
-    print(subapPos)
-
-    print("\nTest matcov")
-    covMat = testCovMat()
-
-    print("\n covMat:\n")
-    print(numpy.array_str(covMat.reshape(NSUBAPS*2, NSUBAPS*2), precision=4))

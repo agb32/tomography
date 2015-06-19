@@ -5,25 +5,25 @@ from matplotlib import pyplot
 
 from aotools import circle
 
-import covarianceMatrix_numba
+import covarianceMatrix_numba as covarianceMatrix
 
 
 # Parameters for CANARY
 TEL_DIAM = 4.2
 
 NWFS = 4
-NSUBAPS = numpy.array([37]*NWFS)
-NXSUBAPS = numpy.array([7]*NWFS)
-SUBAPDIAM = numpy.array([0.6]*NWFS)
+NSUBAPS = numpy.array([749]*NWFS)
+NXSUBAPS = numpy.array([31]*NWFS)
+SUBAPDIAM = numpy.array([4.2/NXSUBAPS[0]]*NWFS)
 GSALT = numpy.array([0]*NWFS)
-GSPOS = numpy.array([ [0,0],[0, 1], [0, -1], [1,0] ]) * (1./3600) * (numpy.pi/180.)
+GSPOS = numpy.array([ [0,0],[0, 0.1], [0, -.1], [.1,0] ]) * (1./3600) * (numpy.pi/180.)
 
 NLAYERS = 1
 LAYERHEIGHTS = numpy.array([12376.])
 CN2 = numpy.array([10.0])
 L0 = numpy.array([10.])
 
-PUPIL_MASK = circle.circle(3.5, 7)
+PUPIL_MASK = circle.circle(15.5, 31)
 
 
 

@@ -156,7 +156,6 @@ matcov_styc(struct tomo_struct tomo, double *data) {
 	      caa_yy += cov[1];
 	      caa_xy += cov[2];
 
-
 	      free(cov);
 	      }
 	  }
