@@ -26,8 +26,6 @@ L0 = numpy.array([10.])
 PUPIL_MASK = circle.circle(3.5, 7)
 
 
-
-
 # class LATomo(object):
 
 # 	def __init__(self, pxlScale, totSubaps, nxSubaps, subapDiam):
@@ -40,7 +38,7 @@ PUPIL_MASK = circle.circle(3.5, 7)
 # 	def loadRawData(self, filename):
 # 		self.rawSlopes = fits.getdata(filename)
 
-# 		self.rawSlopes_rad = (self.rawSlopes * 
+# 		self.rawSlopes_rad = (self.rawSlopes *
 # 				self.pxlScale * numpy.pi/180./3600.)
 
 # 		self.covMat_raw = numpy.cov(self.rawSlopes_rad.T)[:self.totSubaps, self.totSubaps:]
@@ -66,11 +64,11 @@ PUPIL_MASK = circle.circle(3.5, 7)
 
 # 		if mode==1:
 # 			self.theo_covMat = tomoMatrix.fitNgsCovMat_root(
-# 					self.covMat_raw, self.nxSubaps, self.subapDiam, 
+# 					self.covMat_raw, self.nxSubaps, self.subapDiam,
 # 					self.subapMask, guess_r0, guess_pos, L01=10e6, plot=plot)
 # 		elif mode==2:
 # 			self.theo_covMat = tomoMatrix.fitNgsCovMat_minimise(
-# 					self.covMat_raw, self.nxSubaps, self.subapDiam, 
+# 					self.covMat_raw, self.nxSubaps, self.subapDiam,
 # 					self.subapMask, guess_r0, guess_pos, L01=10e6, plot=plot)
 
 
@@ -87,7 +85,7 @@ def canaryCovMat():
 def fillCovMat(covMat, subapPos):
 
 	covMat = covarianceMatrix.matcov(
-			NWFS, NSUBAPS, NXSUBAPS, SUBAPDIAM, subapPos, GSALT, GSPOS, 
+			NWFS, NSUBAPS, NXSUBAPS, SUBAPDIAM, subapPos, GSALT, GSPOS,
 			NLAYERS, LAYERHEIGHTS, CN2, L0, covMat)
 
 	return covMat
@@ -108,4 +106,3 @@ if __name__ == "__main__":
 	# canary = LATomo(PXL_SCALE, TOT_SUBAPS, NX_SUBAPS, SUBAP_DIAM)
 	# canary.loadRawData(os.environ["HOME"]+"/CfAI/tomography/sim/CANARY_2WFS_tomo/2015-05-13-17-03-18/slopes.fits")
 	# canary.fitRawData(GUESS, plot=True, mode=2)
-
