@@ -25,11 +25,13 @@ def matcov(
         data (ndarray): An empty array to fill, of size (2*totalSubaps, 2*totalSubaps)
 
     """
+
     subapLayerPos = subap_position(
             nWfs, nSubaps, nxSubaps, gsAlt, gsPos, subapPos, nLayers,
             layerHeights, pupilOffset, gsMag,
             wfsRot
             )
+
 
     # Compute u and v
 
@@ -196,6 +198,7 @@ def subap_position(
 
     # u, v arrays, contain subap coordinates of all WFSs
     # CURRENTLY BROKEN FOR WFSs WITH DIFFERENT nSUBAPS!!
+
     u = numpy.zeros((nWfs, nSubaps[0], nLayers), dtype=numpy.float64)
     v = numpy.zeros((nWfs, nSubaps[0], nLayers), dtype=numpy.float64)
 
@@ -204,9 +207,11 @@ def subap_position(
 
         for n in range(0, nWfs):
 
+            # print(n, gsPos.shape, l, layerHeights.shape)
             dX = gsPos[n, 0] * layerHeights[l]
             dY = gsPos[n, 1] * layerHeights[l]
 
+            print(gsAlt)
             rr = 1. - layerHeights[l] * gsAlt[n]
 
             # Magnification

@@ -5,23 +5,23 @@ from matplotlib import pyplot
 
 from aotools import circle
 
-import covarianceMatrix_numba
+import covarianceMatrix_numba as covarianceMatrix
 
 
 # Parameters for CANARY
 TEL_DIAM = 4.2
 
-NWFS = 4
+NWFS = 3
 NSUBAPS = numpy.array([37]*NWFS)
 NXSUBAPS = numpy.array([7]*NWFS)
 SUBAPDIAM = numpy.array([0.6]*NWFS)
 GSALT = numpy.array([0]*NWFS)
-GSPOS = numpy.array([ [0,0],[0, 1], [0, -1], [1,0] ]) * (1./3600) * (numpy.pi/180.)
+GSPOS = numpy.array([ [1,0],[0, 0], [-1, 0], [1,0] ]) * (1./3600) * (numpy.pi/180.)
 
 NLAYERS = 1
 LAYERHEIGHTS = numpy.array([12376.])
 CN2 = numpy.array([10.0])
-L0 = numpy.array([10.])
+L0 = numpy.array([100.])
 
 PUPIL_MASK = circle.circle(3.5, 7)
 
@@ -76,6 +76,7 @@ def canaryCovMat():
 	subapPos = (numpy.array(numpy.where(PUPIL_MASK==1)).T * TEL_DIAM/NXSUBAPS[0]).T
 	subapPos = numpy.tile(subapPos, (1,NWFS))
 
+	print(subapPos)
 	covMat = numpy.zeros( (2*NSUBAPS.sum(), 2*NSUBAPS.sum()), dtype="float64")
 
 	covMat = fillCovMat(covMat, subapPos)
