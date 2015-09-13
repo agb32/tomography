@@ -86,17 +86,17 @@ class TomoAO(object):
 
         # Check if parameters are to be fitted. If so, add to guess.
         # If not, set the static argument to the value
-        if fitGsPositions:
-            guess = numpy.append(guess, gsPositions.flatten())
-            staticGsPositions = None
-        else:
-            staticGsPositions = gsPositions
-
         if fitGsAltitudes:
             guess = numpy.append(guess, gsAltitudes.flatten())
             staticGsAltitudes = None
         else:
             staticGsAltitudes = gsAltitudes
+
+        if fitGsPositions:
+            guess = numpy.append(guess, gsPositions.flatten())
+            staticGsPositions = None
+        else:
+            staticGsPositions = gsPositions
 
         if fitLayerHeights:
             guess = numpy.append(guess, layerHeights.flatten())
@@ -185,7 +185,7 @@ if __name__ == "__main__":
 
     mask = circle.circle(3.5, 7)
 
-    gsPositions = numpy.array([[1, 0], [0, 0], [-1,0]])* (1./3600) * (numpy.pi/180.)
+    gsPositions = numpy.array([[1, 0], [0, 0], [-1,0]])
     gsAltitudes = numpy.array([0, 0, 0])
     nLayers = 1
     layerHeights = numpy.array([12376.])
