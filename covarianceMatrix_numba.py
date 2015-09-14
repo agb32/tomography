@@ -160,8 +160,6 @@ def matcov(
 
     return data
 
-
-
 def mirrorCovMat(covMat, nSubaps):
 
     totSlopes = covMat.shape[0]
@@ -211,7 +209,7 @@ def subap_position(
             dX = gsPos[n, 0] * layerHeights[l]
             dY = gsPos[n, 1] * layerHeights[l]
 
-            print(gsAlt)
+            # print(gsAlt)
             rr = 1. - layerHeights[l] * gsAlt[n]
 
             # Magnification

@@ -81,7 +81,7 @@ class TomoAO(object):
     def fitToData(
             self, rawCovMat,  nLayers, gsAltitudes, gsPositions, layerHeights,
             cn2, L0, fitGsAltitudes=True, fitGsPositions=True,
-            fitLayerHeights=True, fitCn2=True, fitL0=True):
+            fitLayerHeights=True, fitCn2=True, fitL0=True, callback=None):
         guess = numpy.array([])
 
         # Check if parameters are to be fitted. If so, add to guess.
@@ -120,27 +120,26 @@ class TomoAO(object):
 
         staticArgs = (  rawCovMat, self.nGS, nLayers, staticGsAltitudes,
                         staticGsPositions, staticLayerHeights, staticCn2,
-                        staticL0)
+                        staticL0, callback)
 
         optResult = root(self.getFitError, guess, staticArgs, method="lm")
 
         print(optResult)
 
     def covMatFromParamBuf(
-            self, covMatParams, nGS, nLayers, gsPositions=None,
-            gsAltitudes=None, layerHeights=None, cn2=None, L0=None):
+            self, covMatParams, nGS, nLayers, gsAltitudes=None,  gsPositions=None, layerHeights=None, cn2=None, L0=None):
 
+        print(covMatParams)
 
         # Check which params are in param Buffer and which are static
         i = 0
-        if gsPositions==None:
-            gsPositions = covMatParams[i:i+(2*nGS)].reshape(nGS, 2)
-            i+=(2*nGS)
-
-        print(gsAltitudes)
         if gsAltitudes==None:
             gsAltitudes = covMatParams[i:i+nGS]
             i+=nGS
+
+        if gsPositions==None:
+            gsPositions = covMatParams[i:i+(2*nGS)].reshape(nGS, 2)
+            i+=(2*nGS)
 
         if layerHeights==None:
             layerHeights = covMatParams[i:i+nLayers]
@@ -168,16 +167,19 @@ class TomoAO(object):
         return covMat
 
     def getFitError(
-        self, covMatParams, rawCovMat, nGS, nLayers, gsPositions=None,
-        gsAltitudes=None, layerHeights=None, cn2=None, L0=None):
+        self, covMatParams, rawCovMat, nGS, nLayers, gsAltitudes=None,
+        gsPositions=None, layerHeights=None, cn2=None, L0=None, callback=None):
 
 
         theoCovMat = self.covMatFromParamBuf(
-                covMatParams, nGS, nLayers, gsPositions, gsAltitudes,
+                covMatParams, nGS, nLayers, gsAltitudes, gsPositions,
                 layerHeights, cn2, L0)
         residual = theoCovMat - rawCovMat
 
         print("\n***\nRMS: {}\n***\n".format(numpy.sqrt((residual**2).mean())))
+
+        if callback:
+            callback(theoCovMat)
 
         return (residual**2).flatten()
 
@@ -185,7 +187,7 @@ if __name__ == "__main__":
 
     mask = circle.circle(3.5, 7)
 
-    gsPositions = numpy.array([[1, 0], [0, 0], [-1,0]])
+    gsPositions = numpy.array([[1, 0], [0, 0], [-1,0]])* (1./3600) * (numpy.pi/180.)
     gsAltitudes = numpy.array([0, 0, 0])
     nLayers = 1
     layerHeights = numpy.array([12376.])
