@@ -48,7 +48,6 @@ class TomoAO(object):
                 (2*self.totalSubaps, 2*self.totalSubaps), dtype="float32")
 
 
-
     def calcSubapPositions(self):
         """
         Calculates the coordinates of each GS sub-aperture at the pupil altitude
@@ -80,78 +79,149 @@ class TomoAO(object):
 
     def fitToData(
             self, rawCovMat,  nLayers, gsAltitudes, gsPositions, layerHeights,
-            cn2, L0, fitGsAltitudes=True, fitGsPositions=True,
-            fitLayerHeights=True, fitCn2=True, fitL0=True, callback=None):
+            cn2, L0, fitGsAltitudes=False, fitGsPositions=False,
+            fitLayerHeights=False, fitCn2=False, fitL0=False, callback=None):
+
+        # Check all "fit" params are arrays, if not turn them into one!
+        try:
+            len(fitGsAltitudes)
+        except TypeError:
+            fitGsAltitudes = numpy.array([fitGsAltitudes]*self.nGS)
+
+        try:
+            len(fitGsPositions)
+        except TypeError:
+            fitGsPositions = numpy.array([fitGsPositions]*(self.nGS*2)).reshape((self.nGS, 2))
+
+        try:
+            len(fitLayerHeights)
+        except TypeError:
+            fitLayerHeights = numpy.array([fitLayerHeights]*nLayers)
+
+        try:
+            len(fitCn2)
+        except TypeError:
+            fitCn2 = numpy.array([fitCn2]*nLayers)
+
+        try:
+            len(fitL0)
+        except TypeError:
+            fitL0 = numpy.array([fitL0]*nLayers)
+
+        # Turn all params into ndarrays of python "objects"
+        # Copy all the parameters so they don't get changed later
+        gsAltitudes = gsAltitudes.copy().astype("object")
+        gsPositions = gsPositions.copy().astype("object")
+        layerHeights = layerHeights.copy().astype("object")
+        cn2 = cn2.copy().astype("object")
+        L0 = L0.copy().astype("object")
+
+        # init an array to store the first guess of variables to be fitted
         guess = numpy.array([])
 
         # Check if parameters are to be fitted. If so, add to guess.
         # If not, set the static argument to the value
-        if fitGsAltitudes:
-            guess = numpy.append(guess, gsAltitudes.flatten())
-            staticGsAltitudes = None
-        else:
-            staticGsAltitudes = gsAltitudes
+        for i, fit in enumerate(fitGsAltitudes):
+            if fit==True:
+                guess = numpy.append(guess, gsAltitudes[i])
+                gsAltitudes[i] = None
 
-        if fitGsPositions:
-            guess = numpy.append(guess, gsPositions.flatten())
-            staticGsPositions = None
-        else:
-            staticGsPositions = gsPositions
+        gsPositions = gsPositions.reshape(2*self.nGS)
+        fitGsPositions = fitGsPositions.reshape(2*self.nGS)
+        for i, fit in enumerate(fitGsPositions):
+            if fit:
+                guess = numpy.append(guess, gsPositions[i])
+                gsPositions[i] = None
+        gsPositions = gsPositions.reshape((self.nGS, 2))
+        fitGsPositions = fitGsPositions.reshape((self.nGS, 2))
 
-        if fitLayerHeights:
-            guess = numpy.append(guess, layerHeights.flatten())
-            staticLayerHeights = None
-        else:
-            staticLayerHeights = layerHeights
+        for i, fit in enumerate(fitLayerHeights):
+            if fit:
+                guess = numpy.append(guess, layerHeights[i])
+                layerHeights[i] = None
 
-        if fitCn2:
-            guess = numpy.append(guess, cn2.flatten())
-            staticCn2 = None
-        else:
-            staticCn2 = cn2
+        print(layerHeights)
+        for i, fit in enumerate(fitCn2):
+            if fit:
+                guess = numpy.append(guess, cn2[i])
+                cn2[i] = None
 
-        if fitL0:
-            guess = numpy.append(guess, L0.flatten())
-            staticL0 = None
-        else:
-            staticL0 = L0
+        for i, fit in enumerate(fitL0):
+            if fit:
+                guess = numpy.append(guess, L0[i])
+                L0[i] = None
 
         self.guess = guess
 
-        staticArgs = (  rawCovMat, self.nGS, nLayers, staticGsAltitudes,
-                        staticGsPositions, staticLayerHeights, staticCn2,
-                        staticL0, callback)
+        if len(self.guess)==0:
+            raise Exception("WHOA! You ain't given me anything to fit?!?!?!")
 
-        optResult = root(self.getFitError, guess, staticArgs, method="lm")
+        staticArgs = (
+                rawCovMat, gsAltitudes, gsPositions, layerHeights, cn2, L0,
+                callback)
+
+        print(staticArgs)
+        optResult = root(
+                self.covMatOpt, guess, staticArgs, method="lm")
 
         print(optResult)
 
-    def covMatFromParamBuf(
-            self, covMatParams, nGS, nLayers, gsAltitudes=None,  gsPositions=None, layerHeights=None, cn2=None, L0=None):
+    def covMatFromFitParams(
+            self, covMatParams, gsAltitudes,  gsPositions,
+            layerHeights, cn2, L0):
+        """
+        Generates a covariance matrix from the optimization fitting parameters.
 
-        print(covMatParams)
+        All values are numpy ndarrays. Parameters which are to be fitted (i.e. not kept static during optimization) should be denoted with ``None``.
+        Parameters:
+            covMatParams (ndarray): A 1-d array of values which will be fitted
+            gsAltitudes (ndarray): A 1-d array of inverse guide star altitudes.
 
+        """
+
+        print("Optimization Parameters: {}".format(covMatParams))
+        nLayers = len(layerHeights)
+        print("GS Altitudes: {}".format(gsAltitudes))
+        print("GS Positions: {}".format(gsPositions))
+        print("nLayers: {}".format(nLayers))
+        print("layer Heights: {}".format(layerHeights))
+        print("CN^2: {}".format(cn2))
+        print("L0: {}\n".format(L0))
         # Check which params are in param Buffer and which are static
-        i = 0
-        if gsAltitudes==None:
-            gsAltitudes = covMatParams[i:i+nGS]
-            i+=nGS
+        # Fill the parameter arrays with all required values
 
-        if gsPositions==None:
-            gsPositions = covMatParams[i:i+(2*nGS)].reshape(nGS, 2)
-            i+=(2*nGS)
+        np = 0 # counter to keep track of fitted parameters
 
-        if layerHeights==None:
-            layerHeights = covMatParams[i:i+nLayers]
-            i+=nLayers
+        gsAltitudes = gsAltitudes.copy()
+        for i, val in enumerate(gsAltitudes):
+            if val==None:
+                gsAltitudes[i] = covMatParams[np]
+                np+=1
 
-        if cn2==None:
-            cn2 = covMatParams[i:i+nLayers]
-            i+=nLayers
+        gsPositions = gsPositions.copy().reshape((2*self.nGS))
+        for i, val in enumerate(gsPositions):
+            if val==None:
+                gsPositions[i] = covMatParams[np]
+                np+=1
+        gsPositions.resize((self.nGS, 2))
 
-        if L0==None:
-            L0 = covMatParams[i:i+nLayers]
-            i+=nLayers
+        layerHeights = layerHeights.copy()
+        for i, val in enumerate(layerHeights):
+            if val==None:
+                layerHeights[i] = covMatParams[np]
+                np+=1
+
+        cn2 = cn2.copy()
+        for i, val in enumerate(cn2):
+            if val==None:
+                cn2[i] = covMatParams[np]
+                np+=1
+
+        L0 = L0.copy()
+        for i, val in enumerate(L0):
+            if val==None:
+                L0[i] = covMatParams[np]
+                np+=1
 
         print("GS Altitudes: {}".format(gsAltitudes))
         print("GS Positions: {}".format(gsPositions))
@@ -166,17 +236,15 @@ class TomoAO(object):
 
         return covMat
 
-    def getFitError(
-        self, covMatParams, rawCovMat, nGS, nLayers, gsAltitudes=None,
-        gsPositions=None, layerHeights=None, cn2=None, L0=None, callback=None):
+    def covMatOpt(
+        self, covMatParams, rawCovMat, gsAltitudes, gsPositions, layerHeights, cn2, L0, callback):
 
-
-        theoCovMat = self.covMatFromParamBuf(
-                covMatParams, nGS, nLayers, gsAltitudes, gsPositions,
-                layerHeights, cn2, L0)
+        theoCovMat = self.covMatFromFitParams(
+                covMatParams, gsAltitudes, gsPositions, layerHeights, cn2, L0)
         residual = theoCovMat - rawCovMat
 
-        print("\n***\nRMS: {}\n***\n".format(numpy.sqrt((residual**2).mean())))
+        print("\n***\nRMS: {}\n***\n\n".format(
+                numpy.sqrt((residual**2).mean())))
 
         if callback:
             callback(theoCovMat)
@@ -187,7 +255,7 @@ if __name__ == "__main__":
 
     mask = circle.circle(3.5, 7)
 
-    gsPositions = numpy.array([[1, 0], [0, 0], [-1,0]])* (1./3600) * (numpy.pi/180.)
+    gsPositions = numpy.array([[1, 0], [0, 0], [-1,0]])
     gsAltitudes = numpy.array([0, 0, 0])
     nLayers = 1
     layerHeights = numpy.array([12376.])
@@ -199,5 +267,6 @@ if __name__ == "__main__":
             gsAltitudes, gsPositions, nLayers, layerHeights, cn2, L0)
 
 
-    pyplot.imshow(covMat, origin="lower")
-    pyplot.show()
+    T.fitToData(
+            covMat, 1, gsAltitudes, gsPositions, layerHeights, cn2, L0,
+            fitCn2=True)
