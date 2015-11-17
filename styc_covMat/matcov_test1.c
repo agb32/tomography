@@ -169,6 +169,3 @@ void print_array_3p(double ***data, int xSize, int ySize, int zSize)
         printf("\n");
     }
 }
-
-
-

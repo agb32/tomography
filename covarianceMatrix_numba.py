@@ -16,6 +16,7 @@ def matcov(
         nSubaps (ndarray): Number of sub-apertures for each WFS
         nxSubaps (ndarray): Number of sub-apertures in one direction for each WFS
         subapDiam (ndarray): The diameter of the sub-apertures for each WFS in metres
+        subapPos (ndarray): The position of each sub-aperture in the pupil for each WFS
         gsAlt (ndarray): Reciprocal (1/metres) of the Guide star alitude for each WFS
         GSPos (ndarray): X,Y position of each WFS in arcsecs. Array shape (Wfs, 2)
         nLayers (int): The Number of atmospheric turbulence layers
@@ -35,7 +36,7 @@ def matcov(
 
     # Compute u and v
 
-    # Rescale the projected suze of all subapertures at the different altitudes
+    # Rescale the projected size of all subapertures at the different altitudes
     subapSizes = numpy.zeros((nWfs, nLayers))
     for n in range(nWfs):
         for l in range(nLayers):

@@ -64,8 +64,23 @@ class TomoAO(object):
 
 
     def makeCovMat(
-            self, gsAltitudes, gsPositions, nLayers, layerHeights, cn2, L0):
+            self, gsAltitudes, gsPositions, layerHeights, cn2, L0):
+        """
+        Computes a theoretical covariance matrix
 
+        Parameters:
+            gsAltitudes (ndarray): array of length `nGS`, of the inverse of each guide stars altitude
+            gsPositions (ndarray): 2-d array with the GS positions in arc-seconds
+            layerHeights (ndarray): An array of length "number of layers", with the height of each turbulent layer
+            cn2 (ndarray): An array of length `nLayers` with the strength of each turbulent layer
+            L0 (ndarray): An array of length 'nLayers' with the outer scale of each turbulent layer
+
+        Returns:
+            ndarray: Covariance matrix array
+        """
+        nLayers = len(layerHeights)
+
+        # Convert gsPositions to radians from arcsecs
         gsPositions = gsPositions * (1./3600) * (numpy.pi/180)
 
         # Actually do covariance matrix calculation
@@ -232,7 +247,7 @@ class TomoAO(object):
 
         # Make theoretical covariance
         covMat = self.makeCovMat(
-                gsAltitudes, gsPositions, nLayers, layerHeights, cn2, L0)
+                gsAltitudes, gsPositions, layerHeights, cn2, L0)
 
         return covMat
 
@@ -255,7 +270,7 @@ if __name__ == "__main__":
 
     mask = circle.circle(3.5, 7)
 
-    gsPositions = numpy.array([[1, 0], [0, 0], [-1,0]])
+    gsPositions = numpy.array([[1., 0], [0, 0], [-1.,0]])
     gsAltitudes = numpy.array([0, 0, 0])
     nLayers = 1
     layerHeights = numpy.array([12376.])
@@ -264,9 +279,9 @@ if __name__ == "__main__":
 
     T = TomoAO(3, mask, 0.6)
     covMat = T.makeCovMat(
-            gsAltitudes, gsPositions, nLayers, layerHeights, cn2, L0)
+            gsAltitudes, gsPositions, layerHeights, cn2, L0)
 
 
-    T.fitToData(
-            covMat, 1, gsAltitudes, gsPositions, layerHeights, cn2, L0,
-            fitCn2=True)
+    # T.fitToData(
+    #         covMat, 1, gsAltitudes, gsPositions, layerHeights, cn2, L0,
+    #         fitCn2=True)

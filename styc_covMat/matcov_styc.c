@@ -21,7 +21,7 @@
 
 void
 matcov_styc(struct tomo_struct tomo, double *data) {
-
+  
   const long cNw = tomo.Nw;
   const long cNlayer = tomo.Nlayer;
   long i; 
@@ -32,7 +32,6 @@ matcov_styc(struct tomo_struct tomo, double *data) {
   // u[0][1][3] is the X-coordinate of subap number 3 of wfs number 0 at altitude 3
   double*** u = arr3dAlloc( cNw, tomo.Nsubap, cNlayer);
   double*** v = arr3dAlloc( cNw, tomo.Nsubap, cNlayer);
-
 
   //Computes  u and v
    subap_position(tomo, u, v);
@@ -165,10 +164,6 @@ matcov_styc(struct tomo_struct tomo, double *data) {
 	  data[i0 + off_XY] = caa_xy;   //xy
 	  data[i0 + off_YX] = caa_xy;   //yx
 	  data[i0 + off_YY] = caa_yy; //yy
-
-    printf("i: %li, j: %li, i0: %li, NL: %li\n", i, j, i0, NL);
-    printf("off_XY: %li, off_YX: %li, off_YY: %li\n", off_XY, off_YX, off_YY);
-    printf("caa_xx: %.3f, caa_yy: %.3f, caa_xy: %.3f\n\n", caa_xx, caa_yy, caa_xy);
 
 	}
       }
@@ -585,7 +580,8 @@ rodconan(double r, double L0, int k)
   return res;
 }
 
-double DPHI(double x, double y, double L0)
+double
+DPHI(double x, double y, double L0)
 /* DOCUMENT dphi = DPHI(x,y, L0) * r0^(-5./3)
  <x> & <y>         :  separation between apertures
  <L0>         :  outerscale

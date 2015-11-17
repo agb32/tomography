@@ -16,7 +16,7 @@ NSUBAPS = numpy.array([37]*NWFS)
 NXSUBAPS = numpy.array([7]*NWFS)
 SUBAPDIAM = numpy.array([0.6]*NWFS)
 GSALT = numpy.array([0]*NWFS)
-GSPOS = numpy.array([ [1,0],[0, 0], [-1, 0], [1,0] ]) * (1./3600) * (numpy.pi/180.)
+GSPOS = numpy.array([ [-5,0], [0, 0], [5,0] ]) * (1./3600) * (numpy.pi/180.)
 
 NLAYERS = 1
 LAYERHEIGHTS = numpy.array([12376.])
