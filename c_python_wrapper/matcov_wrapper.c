@@ -13,7 +13,7 @@ typedef struct {
 static int Tomo_init(Tomo *self, PyObject *args, PyObject *kwds)
 {
     //The tomo object __init__ function
-    printf("\nInitialising the covmat object in C\n");
+    // printf("\nInitialising the covmat object in C\n");
 
     // declare all the things needed by the tomo struct
     long Nw;
@@ -27,13 +27,11 @@ static int Tomo_init(Tomo *self, PyObject *args, PyObject *kwds)
     PyArrayObject *cn2, *h, *L0;
     int ncpu, part;
 
-    printf("\nAbout to parse params...\n");
-
-
+    // printf("\nAbout to parse params...\n");
 
     if (! PyArg_ParseTuple(args, "lO!O!ddO!O!O!O!O!O!O!O!O!O!O!lO!O!O!ii", &Nw, &PyArray_Type, &X, &PyArray_Type, &Y, &DiamTel, &obs, &PyArray_Type, &Nsubap, &PyArray_Type, &Nssp, &PyArray_Type, &GsAlt, &PyArray_Type, &type, &PyArray_Type, &alphaX, &PyArray_Type, &alphaY, &PyArray_Type, &XPup, &PyArray_Type, &YPup, &PyArray_Type, &thetaML, &PyArray_Type, &diamPup, &PyArray_Type, &sspSize, &Nlayer, &PyArray_Type, &cn2, &PyArray_Type, &h, &PyArray_Type, &L0, &ncpu, &part)) return NULL;
 
-    printf("\nParsed Python params\n");
+    // printf("\nParsed Python params\n");
 
     self->tomoStruct.Nw = Nw;
     self->tomoStruct.X = (double*) PyArray_DATA(PyArray_Cast(X, NPY_DOUBLE));
@@ -58,27 +56,27 @@ static int Tomo_init(Tomo *self, PyObject *args, PyObject *kwds)
     self->tomoStruct.ncpu = ncpu;
     self->tomoStruct.part = part;
 
-    printf("loaded all data from %ld WFSs successfully\n", Nw);
+    // printf("loaded all data from %ld WFSs successfully\n", Nw);
 
     return 0;
 }
 
 static PyObject* covmat(Tomo *self, PyObject *args)
 {
-    printf("In the covmat function\n");
+    // printf("In the covmat function\n");
     PyArrayObject *covmat_npy;
     double *covmat_data;
     int ndim;
     npy_intp *dims;
 
-    printf("Going to make a covmat!\n");
+    // printf("Going to make a covmat!\n");
     if (! PyArg_ParseTuple(args, "O!", &PyArray_Type, &covmat_npy)) return NULL;
 
-    printf("Parsed the covmat args\n");
+    // printf("Parsed the covmat args\n");
     // Get a pointer to the data from the numpy array
     covmat_data = (double*) PyArray_DATA(PyArray_Cast(covmat_npy, NPY_DOUBLE));
 
-    printf("Got the covmat array from numpy\n");
+    // printf("Got the covmat array from numpy\n");
     //Do the calculation
     matcov_styc(self->tomoStruct, covmat_data);
 

@@ -3,9 +3,10 @@
 import numpy
 import numba
 
+
 def matcov(
         nWfs, nSubaps, nxSubaps, subapDiam, subapPos, gsAlt, gsPos, nLayers,
-        layerHeights, cn2, L0, data, covMatPart=0 , pupilOffset=None, 
+        layerHeights, cn2, L0, data, covMatPart=0 , pupilOffset=None,
         gsMag=None, wfsRot=None):
     """
     Generate a covariance matrix for a given parameter set.
@@ -26,12 +27,10 @@ def matcov(
 
     """
     subapLayerPos = subap_position(
-            nWfs, nSubaps, nxSubaps, gsAlt, gsPos, subapPos, nLayers, 
+            nWfs, nSubaps, nxSubaps, gsAlt, gsPos, subapPos, nLayers,
             layerHeights, pupilOffset, gsMag,
             wfsRot
             )
-
-    # Compute u and v
 
     # Rescale the projected suze of all subapertures at the different altitudes
     subapSizes = numpy.zeros((nWfs, nLayers))
@@ -43,7 +42,7 @@ def matcov(
     #####################################
 
     # lambda2 = pow(206265.*0.5e-6/2./3.1415926535,2);
-    lambda2 = 0.00026942094446267851 
+    lambda2 = 0.00026942094446267851
 
     # Truth Sensor no
     ts = nWfs - 1
@@ -54,38 +53,15 @@ def matcov(
     # Find the total number of slopes
     totSlopes = 2 * nSubaps.sum()
 
-    if covMatPart==0:
-        m0 = 0
-        mf = nWfs
-        n0 = 0
-
-        NL = totSlopes
-
-    elif covMatPart==1:
-        m0 = 0
-        mf = nWfs-1
-        n0 = 0
-
-        totSlopes *= 2
-        NL = totSlopes - 2*nSubaps[ts]
-
-    elif covMatPart==3:
-        m0 = 0
-        mf = nWfs - 1
-        n0 = nWfs - 1
-        nf = ts
-        NL = 2*nSubaps[nWfs-1]
-
     # Loop over WFS 1
-    for m in range(m0, mf):
+    for m in range(0, nWfs):
         Ni = nSubaps[m] + ioff
 
-        # Loop over WFS 2
-        # Breaks covMatPart=3
-        for n in range(n0, m+1):
+        # Loop over WFS 2. Dont loop over all WFSs, use symmetry
+        for n in range(0, m+1):
 
             off_XY = nSubaps[n]
-            off_YX = nSubaps[m] * NL
+            off_YX = nSubaps[m] * totSlopes
             off_YY = off_XY + off_YX
 
             Nj = nSubaps[n] + joff
@@ -96,7 +72,7 @@ def matcov(
             for l in range(0, nLayers):
                 units[l] = kk * lambda2 * cn2[l]
 
-            # Loop through subap i on WFS 1   
+            # Loop through subap i on WFS 1
             for i in range(ioff, Ni):
                 # Loop through subap j on WFS 2
                 for j in range(joff, Nj):
@@ -110,28 +86,26 @@ def matcov(
                         # Check layer is not above LGS
                         if subapSizes[m, l]>0 and subapSizes[n,l]>0:
                             # Distances in x and y between the subapertures i and j
-                            du = (subapLayerPos[0, m, i-ioff, l] 
+                            du = (subapLayerPos[0, m, i-ioff, l]
                                     - subapLayerPos[0, n, j-joff, l])
-                            dv = (subapLayerPos[1, m, i-ioff, l] 
+                            dv = (subapLayerPos[1, m, i-ioff, l]
                                     - subapLayerPos[1,n, j-joff, l])
 
-                            s1 = subapSizes[m, l] * 0.5;
-                            s2 = subapSizes[n, l] * 0.5;
+                            s1 = subapSizes[m, l] * 0.5
+                            s2 = subapSizes[n, l] * 0.5
 
-                            ac = s1 - s2;
-                            ad = s1 + s2;
-                            bc = -ad;
-                            bd = -ac;
+                            ac = s1 - s2
+                            ad = s1 + s2
+                            bc = -ad
+                            bd = -ac
 
                             cov = compute_cov(
                                     du, dv, ac, ad, bc, bd, s1, s2, L0[l],
-                                    units[l]);
+                                    units[l])
 
                             caa_xx += cov[0]
                             caa_yy += cov[1]
                             caa_xy += cov[2]
-
-                    i0 = i*NL + j
 
                     # print("i: {}, j: {}, i0: {}, NL: {}".format(i, j,i0, NL))
                     # print("off_XY: {}, off_YX: {}, off_YY:{}".format(
@@ -140,18 +114,15 @@ def matcov(
                     # print("caa_xx: {:.3f}, caa_yy: {:.3f}, caa_xy: {:.3f}\n".format(
                     #         caa_xx, caa_yy, caa_xy ))
 
-                    # data[i0] = caa_xx
+
                     data[i, j] = caa_xx
-                    # data[i0 + off_XY] = caa_xy
                     data[i+nSubaps[n], j] = caa_xy
-                    # data[i0 + off_YX] = caa_xy
                     data[i, j+nSubaps[m]] = caa_xy
-                    # data[i0 + off_YY] = caa_yy
                     data[i+nSubaps[n], j+nSubaps[m]] = caa_yy
 
-            
+
             joff = joff + 2*nSubaps[n]
-        ioff = ioff + 2*nSubaps[m]
+        ioff += 2*nSubaps[m]
         joff = 0
 
     data = mirrorCovMat(data, nSubaps)
@@ -159,9 +130,9 @@ def matcov(
     return data
 
 
-
+# @numba.jit
 def mirrorCovMat(covMat, nSubaps):
-    
+
     totSlopes = covMat.shape[0]
     nWfs = nSubaps.shape[0]
 
@@ -176,22 +147,22 @@ def mirrorCovMat(covMat, nSubaps):
                 nn1 = totSlopes - 2*nSubaps[n] - n1
                 nn2 = nn1 + 2*nSubaps[n]
 
-                mm1 = totSlopes - 2*nSubaps[m] - m1 
+                mm1 = totSlopes - 2*nSubaps[m] - m1
                 mm2 = mm1 + 2*nSubaps[m]
 
                 covMat[nn1: nn2, mm1: mm2] = (
                         numpy.swapaxes(covMat[n1: n2, m1: m2], 0, 1)
                         )
 
-                m1+=2*nSubaps[m]             
+                m1+=2*nSubaps[m]
         n1+=2*nSubaps[n]
     return covMat
 
-
+# @numba.jit
 def subap_position(
-        nWfs, nSubaps, nxSubaps, gsAlt, gsPos, subapPos, 
+        nWfs, nSubaps, nxSubaps, gsAlt, gsPos, subapPos,
         nLayers, layerHeights, pupilOffset=None, gsMag=None, wfsRot=None):
-    
+
     rad = numpy.pi / 180.
 
 
@@ -210,7 +181,7 @@ def subap_position(
 
             rr = 1. - layerHeights[l] * gsAlt[n]
 
-            # Magnification 
+            # Magnification
             if gsMag!=None:
                 G = float(gsMag[n]) / nxSubaps[n]
             else:
@@ -240,13 +211,13 @@ def subap_position(
             ioff += nSubaps[n]
     return numpy.array([u, v])
 
-
+@numba.jit(nopython=True)
 def compute_cov(du, dv, ac, ad, bc, bd, s1, s2, L0, units):
     """
     <du> & <dv>: X and Y coordinates of the distance between the two considered subapertures.
     <ac> & <ad> & <bc> & <bd>  : precomputed values
     <s1> & <s2>                : half size of each subapertures
-    <L0>                  : 
+    <L0>                  :
     <units>                    :
     Computes the XX, XY and YY covariance values for two subapertures.
     """
@@ -275,8 +246,8 @@ def compute_cov(du, dv, ac, ad, bc, bd, s1, s2, L0, units):
     cov_yy *= units
     cov_xy *= units
 
-    cov = numpy.zeros(3, dtype="float64")
-
+    # cov = numpy.zeros(3, dtype="float64")
+    cov = [0., 0., 0.]
     cov[0] = cov_xx
     cov[1] = cov_yy
     cov[2] = cov_xy
@@ -284,10 +255,10 @@ def compute_cov(du, dv, ac, ad, bc, bd, s1, s2, L0, units):
     return cov
 
 
-
+@numba.jit(nopython=True)
 def cov_XX(du, dv, ac, ad, bc, bd, L0):
     """
-    Compute the XX-covariance with the distance sqrt(du2+dv2). DPHI is 
+    Compute the XX-covariance with the distance sqrt(du2+dv2). DPHI is
     precomputed on tabDPHI.
     """
 
@@ -297,10 +268,10 @@ def cov_XX(du, dv, ac, ad, bc, bd, L0):
             - DPHI(du+bd, dv, L0)
             )
     return cov
-
+@numba.jit(nopython=True)
 def cov_YY(du, dv, ac, ad, bc, bd, L0):
     """
-    Compute the YY-covariance with the distance sqrt(du2+dv2). DPHI is 
+    Compute the YY-covariance with the distance sqrt(du2+dv2). DPHI is
     precomputed on tabDPHI.
     """
 
@@ -311,6 +282,7 @@ def cov_YY(du, dv, ac, ad, bc, bd, L0):
             )
     return cov
 
+@numba.jit(nopython=True)
 def cov_XY(du, dv, s0, L0):
     """
     Compute the XY-covariance with the distance sqrt(du2+dv2). DPHI is precomputed on tabDPHI.
@@ -323,6 +295,7 @@ def cov_XY(du, dv, s0, L0):
             )
     return cov
 
+@numba.jit(nopython=True)
 def DPHI(x, y, L0):
     """
     Parameters:
@@ -339,7 +312,7 @@ def DPHI(x, y, L0):
 
     return rodconan(r, L0, 10)
 
-
+@numba.jit(nopython=True)
 def rodconan(r, L0, k):
     """
     The phase structure function is computed from the expression
@@ -366,7 +339,7 @@ def rodconan(r, L0, k):
     return res
 
 
-
+@numba.jit(nopython=True)
 def asymp_macdo(x):
     """
     Computes a term involved in the computation of the phase struct
@@ -389,13 +362,13 @@ def asymp_macdo(x):
     a3 = 0.08001828989483310284   # 175/2187
 
     x1 = 1./x
-    res = (	k2 
+    res = (	k2
     		- k3 * numpy.exp(-x) * x**(1./3)
     		* (1.0 + x1*(a1 + x1*(a2 + x1*a3)))
     		)
     return res
 
-
+@numba.jit(nopython=True)
 def macdo_x56(x, k):
     """
     Computation of the function
@@ -425,22 +398,22 @@ def macdo_x56(x, k):
     x22 = x * x/4.
 
 
-    Ga = numpy.array([	
+    Ga = [
             0, 12.067619015983075, 5.17183672113560444,
-            0.795667187867016068, 
+            0.795667187867016068,
     		0.0628158306210802181, 0.00301515986981185091,
-      		9.72632216068338833e-05, 2.25320204494595251e-06, 
-      		3.93000356676612095e-08, 5.34694362825451923e-10, 
+      		9.72632216068338833e-05, 2.25320204494595251e-06,
+      		3.93000356676612095e-08, 5.34694362825451923e-10,
       		5.83302941264329804e-12,
-      		], dtype="float64")
+      		]
 
-    Gma = numpy.array([ -3.74878707653729304, -2.04479295083852408,
+    Gma = [ -3.74878707653729304, -2.04479295083852408,
       		-0.360845814853857083, -0.0313778969438136685,
       		-0.001622994669507603, -5.56455315259749673e-05,
       		-1.35720808599938951e-06, -2.47515152461894642e-08,
       		-3.50257291219662472e-10, -3.95770950530691961e-12,
-      		-3.65327031259100284e-14  
-  		], dtype="float64")
+      		-3.65327031259100284e-14
+  		]
 
     x2n = 0.5
 
