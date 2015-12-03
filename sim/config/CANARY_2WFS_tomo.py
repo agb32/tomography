@@ -12,13 +12,13 @@ simConfiguration = {
 "Sim":{
     "simName"       :  "CANARY_2WFS_tomo",
     "logfile"       :   "CANARY_2WFS_tomo.log",
-    "pupilSize"     :   64, 
+    "pupilSize"     :   64,
     "nGS"           :   2,
     "nDM"           :   0,
     "nSci"          :   0,
     "nIters"        :   20000,
     "loopTime"      :   1/400.0,
-    "reconstructor" :   "MVM", 
+    "reconstructor" :   "MVM",
 
     "verbosity"     :   2,
 
@@ -33,6 +33,8 @@ simConfiguration = {
     "windSpeeds"    :   numpy.array([10, 10, 15, 20]),
     "wholeScrnSize" :   4096,
     "r0"            :   0.16,
+    "randomScrns"   :   True,
+    "subHarmonics"  :   True,
     },
 
 "Telescope":{
@@ -45,7 +47,7 @@ simConfiguration = {
     "GSPosition"    :   [(0,5),(0,-5)],
     "nxSubaps"      :   [7]*2,
     "pxlsPerSubap"  :   [16]*2,
-    "subapFOV"      :   [2.5]*2,
+    "subapFOV"      :   [3.]*2,
     "fftOversamp"   :   [3]*2,
     "wavelength"    :   [600e-9]*2,
     "centMethod"    :   ["brightestPxl"]*2,
@@ -65,6 +67,3 @@ simConfiguration = {
 
     }
 }
-
-
-

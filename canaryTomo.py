@@ -11,17 +11,17 @@ import covarianceMatrix_numba as covarianceMatrix
 # Parameters for CANARY
 TEL_DIAM = 4.2
 
-NWFS = 3
+NWFS = 2
 NSUBAPS = numpy.array([37]*NWFS)
 NXSUBAPS = numpy.array([7]*NWFS)
 SUBAPDIAM = numpy.array([0.6]*NWFS)
 GSALT = numpy.array([0]*NWFS)
-GSPOS = numpy.array([ [-5,0], [0, 0], [5,0] ]) * (1./3600) * (numpy.pi/180.)
+GSPOS = numpy.array([ [0, .6], [0, -.6] ]) * (1./3600) * (numpy.pi/180.)
 
 NLAYERS = 1
 LAYERHEIGHTS = numpy.array([12376.])
 CN2 = numpy.array([10.0])
-L0 = numpy.array([100.])
+L0 = numpy.array([0.5])
 
 PUPIL_MASK = circle.circle(3.5, 7)
 

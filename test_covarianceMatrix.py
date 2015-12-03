@@ -119,7 +119,7 @@ class TestCovMat(unittest.TestCase):
 
         self.assertTrue(numpy.allclose(covMat, COVMAT_RESULT1, atol=0.001))
         return covMat
-    
+
     def testCovMat2(self):
         covMat = numpy.zeros((2*NSUBAPS2.sum(), 2*NSUBAPS2.sum()),dtype="float64")
 
@@ -134,10 +134,7 @@ class TestCovMat(unittest.TestCase):
     def test_subapPosition(self):
 
         subapPos = covarianceMatrix.subap_position(
-                NWFS1, NSUBAPS1, NXSUBAPS1, GSALT1, GSPOS1, SUBAP_POS1, 
+                NWFS1, NSUBAPS1, NXSUBAPS1, GSALT1, GSPOS1, SUBAP_POS1,
                 NLAYERS, LAYER_HEIGHTS)
         self.assertTrue(numpy.allclose(subapPos, SUBAP_POS_RESULT))
         return subapPos
-
-
-
