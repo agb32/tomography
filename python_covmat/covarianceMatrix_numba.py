@@ -3,7 +3,7 @@
 import numpy
 import numba
 
-
+@numba.jit
 def matcov(
         nWfs, nSubaps, nxSubaps, subapDiam, subapPos, gsAlt, gsPos, nLayers,
         layerHeights, cn2, L0, data, covMatPart=0 , pupilOffset=None,
@@ -130,7 +130,7 @@ def matcov(
     return data
 
 
-# @numba.jit
+@numba.jit
 def mirrorCovMat(covMat, nSubaps):
 
     totSlopes = covMat.shape[0]
@@ -158,7 +158,7 @@ def mirrorCovMat(covMat, nSubaps):
         n1+=2*nSubaps[n]
     return covMat
 
-# @numba.jit
+@numba.jit
 def subap_position(
         nWfs, nSubaps, nxSubaps, gsAlt, gsPos, subapPos,
         nLayers, layerHeights, pupilOffset=None, gsMag=None, wfsRot=None):

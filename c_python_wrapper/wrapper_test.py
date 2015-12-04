@@ -20,8 +20,8 @@ PUPILROT = numpy.array([0]*NWFS)
 
 NLAYERS = 1
 LAYERHEIGHTS = numpy.array([12376.])
-CN2 = numpy.array([10.0])
-L0 = numpy.array([0.5])
+CN2 = numpy.array([10e-15])
+L0 = numpy.array([100.])
 
 PUPIL_MASK = circle.circle(3.5, 7)
 
