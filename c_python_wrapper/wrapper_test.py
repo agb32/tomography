@@ -15,7 +15,7 @@ GSPOS = numpy.array([ [.6, 0], [-0.6, 0] ]) * (1./3600) * (numpy.pi/180.)
 
 GSTYPE = numpy.array([1]*NWFS) # all NGS
 PUPILSHIFT = numpy.array([0]*NWFS)
-PUPILMAG = numpy.array([1]*NWFS)
+PUPILMAG = numpy.array([7]*NWFS)
 PUPILROT = numpy.array([0]*NWFS)
 
 NLAYERS = 1

@@ -160,7 +160,9 @@ def mirrorCovMat(covMat, nSubaps):
 def subap_position(
         nWfs, nSubaps, nxSubaps, gsAlt, gsPos, subapPos,
         nLayers, layerHeights, pupilOffset=None, gsMag=None, wfsRot=None):
-
+    """
+    Calculates the positions of all the sub-aperture at each turbulence altitude
+    """
     rad = numpy.pi / 180.
 
 
@@ -169,9 +171,10 @@ def subap_position(
     u = numpy.zeros((nWfs, nSubaps[0], nLayers))
     v = numpy.zeros((nWfs, nSubaps[0], nLayers))
 
+    # Loop over all layers
     for l in range(0, nLayers):
         ioff = 0
-
+        # Loop over all WFSs
         for n in range(0, nWfs):
 
             dX = gsPos[n, 0] * layerHeights[l]
@@ -183,14 +186,14 @@ def subap_position(
             if gsMag!=None:
                 G = float(gsMag[n]) / nxSubaps[n]
             else:
-                G = 1./nxSubaps[n]
+                G = 1.
 
             # If Rotation angle required, find angle in radians
             if wfsRot!=None:
                 th = wfsRot[n] * rad
             else:
                 th = 0
-
+            # Loop over all subaps in the WFS
             for i in range(nSubaps[n]):
                 xtp = subapPos[0, ioff + i] * G
                 ytp = subapPos[1, ioff + i] * G
@@ -292,7 +295,12 @@ def cov_XY(du, dv, s0, L0):
             )
     return cov
 
-def DPHI(x, y, L0):
+def DPHI_Kol(x, y, L0):
+    r = numpy.sqrt(x**2 + y**2)
+
+    return 2.91 * ((1./550e-9)**2) * r**(5./3)
+
+def DPHI_VK(x, y, L0):
     """
     Parameters:
         x (float): Seperation between apertures in X direction
@@ -425,3 +433,5 @@ def macdo_x56(x, k):
     	x2n *= x22
 
     return s
+
+DPHI = DPHI_VK
