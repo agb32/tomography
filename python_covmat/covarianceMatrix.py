@@ -15,6 +15,7 @@ def matcov(
         nSubaps (ndarray): Number of sub-apertures for each WFS
         nxSubaps (ndarray): Number of sub-apertures in one direction for each WFS
         subapDiam (ndarray): The diameter of the sub-apertures for each WFS in metres
+        subapPos (ndarray): The position of the initial vertex of each sub-aperture, shape [2, nSubaps]
         gsAlt (ndarray): Reciprocal (1/metres) of the Guide star alitude for each WFS
         GSPos (ndarray): X,Y position of each WFS in arcsecs. Array shape (Wfs, 2)
         nLayers (int): The Number of atmospheric turbulence layers
