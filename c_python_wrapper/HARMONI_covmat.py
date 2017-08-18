@@ -1,29 +1,31 @@
 import numpy
-import aotools
+from aotools import circle
 import TomoAO
 
 # AO Parameters
-TEL_DIAM = 4.2
-OBS = 0.
+TEL_DIAM = 39
+OBS = 8
 
-NWFS = 2
+NWFS = 7
 NSUBAPS = numpy.array([37]*NWFS)
-NXSUBAPS = numpy.array([7]*NWFS)
-SUBAPDIAM = numpy.array([0.6]*NWFS)
+NXSUBAPS = numpy.array([80]*NWFS)
+SUBAPDIAM = TEL_DIAM/NXSUBAPS
 GSALT = numpy.array([0]*NWFS)
-GSPOS = numpy.array([ [.6, 0], [-0.6, 0] ]) * (1./3600) * (numpy.pi/180.)
+GSPOS = numpy.array([ [.6, 0], [-0.6, 0], [.6, 0], [-0.6, 0], [.6, 0], [-0.6, 0] ,[0,0] ]) * (1./3600) * (numpy.pi/180.)
 
 GSTYPE = numpy.array([1]*NWFS) # all NGS
 PUPILSHIFT = numpy.array([0]*NWFS)
-PUPILMAG = numpy.array([7]*NWFS)
+PUPILMAG = numpy.array([80]*NWFS)
 PUPILROT = numpy.array([0]*NWFS)
 
-NLAYERS = 1
-LAYERHEIGHTS = numpy.array([12376.])
-CN2 = numpy.array([10e-15])
-L0 = numpy.array([100.])
+NLAYERS = 10
+LAYERHEIGHTS = numpy.linspace(0,20000, NLAYERS)
+CN2 = numpy.array([10e-15]* NLAYERS)
+L0 = numpy.array([100.]*NLAYERS)
 
-PUPIL_MASK = aotools.circle(NXSUBAPS[0]/2., NXSUBAPS[0])
+PUPIL_MASK = circle.circle(40, 80) - circle.circle(8.2, 80)
+
+NSUBAPS = numpy.array([PUPIL_MASK.sum()]*NWFS)
 
 NCPU = 10
 PART = 0
