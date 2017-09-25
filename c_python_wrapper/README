@@ -1,0 +1,2 @@
+run make, then test with wrapper_test.py, or HARMONI_covmat.py
+(assuming you have plenty of memory).
