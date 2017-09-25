@@ -1,5 +1,5 @@
 import numpy
-from aotools import circle
+import aotools
 import TomoAO
 
 # AO Parameters
@@ -23,7 +23,7 @@ LAYERHEIGHTS = numpy.linspace(0,20000, NLAYERS)
 CN2 = numpy.array([10e-15]* NLAYERS)
 L0 = numpy.array([100.]*NLAYERS)
 
-PUPIL_MASK = circle.circle(40, 80) - circle.circle(8.2, 80)
+PUPIL_MASK = aotools.circle(40, 80) - aotools.circle(8.2, 80)
 
 NSUBAPS = numpy.array([PUPIL_MASK.sum()]*NWFS)
 
