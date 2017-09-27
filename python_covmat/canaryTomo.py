@@ -7,7 +7,7 @@ from aotools import circle
 
 import covarianceMatrix
 # import covarianceMatrix_numba as covarianceMatrix
-
+# import covarianceMatrix_numba_cuda as covarianceMatrix
 
 # Parameters for CANARY
 TEL_DIAM = 4.2
