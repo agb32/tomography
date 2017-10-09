@@ -1,8 +1,11 @@
+
+#include <omp.h>
 #include <Python.h>
 #include <structmember.h>
 #include <numpy/arrayobject.h>
 
 #include "matcov_styc.h"
+
 
 //Define the python "Tomo" object
 typedef struct {
@@ -27,11 +30,11 @@ static int Tomo_init(Tomo *self, PyObject *args, PyObject *kwds)
     PyArrayObject *cn2, *h, *L0;
     int ncpu, part;
 
-    // printf("\nAbout to parse params...\n");
+    printf("\nAbout to parse params...\n");
 
     if (! PyArg_ParseTuple(args, "lO!O!ddO!O!O!O!O!O!O!O!O!O!O!lO!O!O!ii", &Nw, &PyArray_Type, &X, &PyArray_Type, &Y, &DiamTel, &obs, &PyArray_Type, &Nsubap, &PyArray_Type, &Nssp, &PyArray_Type, &GsAlt, &PyArray_Type, &type, &PyArray_Type, &alphaX, &PyArray_Type, &alphaY, &PyArray_Type, &XPup, &PyArray_Type, &YPup, &PyArray_Type, &thetaML, &PyArray_Type, &diamPup, &PyArray_Type, &sspSize, &Nlayer, &PyArray_Type, &cn2, &PyArray_Type, &h, &PyArray_Type, &L0, &ncpu, &part)) return NULL;
 
-    // printf("\nParsed Python params\n");
+    printf("\nParsed Python params\n");
 
     self->tomoStruct.Nw = Nw;
     self->tomoStruct.X = (double*) PyArray_DATA(PyArray_Cast(X, NPY_DOUBLE));
@@ -56,34 +59,49 @@ static int Tomo_init(Tomo *self, PyObject *args, PyObject *kwds)
     self->tomoStruct.ncpu = ncpu;
     self->tomoStruct.part = part;
 
-    // printf("loaded all data from %ld WFSs successfully\n", Nw);
+    printf("loaded all data from %ld WFSs successfully\n", Nw);
 
     return 0;
 }
 
 static PyObject* covmat(Tomo *self, PyObject *args)
 {
-    // printf("In the covmat function\n");
+    printf("In the covmat function\n");
     PyArrayObject *covmat_npy;
     double *covmat_data;
     int ndim;
     npy_intp *dims;
 
-    // printf("Going to make a covmat!\n");
+    printf("Going to make a covmat!\n");
     if (! PyArg_ParseTuple(args, "O!", &PyArray_Type, &covmat_npy)) return NULL;
 
-    // printf("Parsed the covmat args\n");
+    printf("Parsed the covmat args\n");
     // Get a pointer to the data from the numpy array
-    covmat_data = (double*) PyArray_DATA(PyArray_Cast(covmat_npy, NPY_DOUBLE));
+    // if (PyArray_DTYPE(covmat_npy)->type_num != NPY_DOUBLE)
+    // {
+        printf("Cast covmat buffer to double...\n");
+        printf("Current dtype: %d\n", PyArray_DTYPE(covmat_npy)->type_num);
+        covmat_npy = PyArray_Cast(covmat_npy, NPY_DOUBLE);
+    // }
 
-    // printf("Got the covmat array from numpy\n");
+    covmat_data = (double*) PyArray_DATA(covmat_npy);
+
+    printf("Got the covmat array from numpy\n");
     //Do the calculation
+   
+    double begin = omp_get_wtime();
     matcov_styc(self->tomoStruct, covmat_data);
+    double  end = omp_get_wtime();
+    double d_time = (double)(end - begin);
+
+    printf("Covmat execution time: %fs\n", d_time);
+
 
     // Send the pointer back to the python user, get params from input array
     ndim = PyArray_NDIM(covmat_npy);
     dims = PyArray_DIMS(covmat_npy);
     return Py_BuildValue("O", PyArray_SimpleNewFromData(ndim, dims, NPY_DOUBLE, covmat_data));
+    //return Py_BuildValue("O", covmat_npy);
 }
 
 //Python wrapping

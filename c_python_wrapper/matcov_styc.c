@@ -1,5 +1,5 @@
 
-
+#define USE_OPENMP 1
 #ifdef USE_OPENMP
 #include<omp.h>
 #endif
@@ -30,6 +30,7 @@ matcov_styc(struct tomo_struct tomo, double *data) {
   // %%%%%%% Computation of the sub-apertures positions and sizes %%%%%%%%%%%
  // u, v :arrays containing all the sub-apertures coordinates of all WFS, one after the other
   // u[0][1][3] is the X-coordinate of subap number 3 of wfs number 0 at altitude 3
+  printf("Allocating 3d arrays...\n");
   double*** u = arr3dAlloc( cNw, tomo.Nsubap, cNlayer);
   double*** v = arr3dAlloc( cNw, tomo.Nsubap, cNlayer);
 
@@ -116,11 +117,13 @@ matcov_styc(struct tomo_struct tomo, double *data) {
         units[l] = kk * lambda2 * tomo.cn2[l];
       }
 
-#ifdef USE_OPENMP
-#pragma omp parallel private(j,l) num_threads(tomo.ncpu)
-#pragma omp for nowait
-#endif
+      printf("Begin Covariance Matrix Calculation with %d threads\n", tomo.ncpu);
+// #ifdef USE_OPENMP
+// #pragma omp parallel private(j,l) num_threads(tomo.ncpu)
+// #pragma omp for nowait
+// #endif
       //Subaperture i
+      #pragma omp parallel private(j,l) num_threads(tomo.ncpu)
       for (i = ioff; i < Ni; i++) {
 
         //Subaperture j
@@ -167,26 +170,29 @@ matcov_styc(struct tomo_struct tomo, double *data) {
 
 	}
       }
+    printf("Done Parallel computation\n");
       joff = joff + 2 * tomo.Nsubap[n];
     }
     ioff = ioff + 2 * tomo.Nsubap[m];
     joff = 0;
   }
 
+   // printf("Mirror matrix\n");
   //Recopie de la symétrie
-  if (tomo.part == 0 || tomo.part == 1) { //Complete matrix
-    long size=NL-1;
-    double *matL = (double*)data+1;
-    double *matU = (double*)data+NL;
-    do {
-      for(int j=0; j<size; j++) 
-	matL[j]=matU[j*NL];
-      size--;
-      matL+=NL+1;
-      matU+=NL+1;
-    } while (size>0);
-   }
+  // if (tomo.part == 0 || tomo.part == 1) { //Complete matrix
+  //   long size=NL-1;
+  //   double *matL = (double*)data+1;
+  //   double *matU = (double*)data+NL;
+  //   do {
+  //     for(int j=0; j<size; j++) 
+  //   matL[j]=matU[j*NL];
+  //     size--;
+  //     matL+=NL+1;
+  //     matU+=NL+1;
+  //   } while (size>0);
+  //  }
  
+  printf("Cleanup...\n");
   arr3dFree(u, cNw, tomo.Nsubap);
   arr3dFree(v, cNw, tomo.Nsubap);
 }

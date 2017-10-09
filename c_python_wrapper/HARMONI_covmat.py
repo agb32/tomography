@@ -1,3 +1,4 @@
+import time
 import numpy
 import aotools
 import TomoAO
@@ -27,7 +28,7 @@ PUPIL_MASK = aotools.circle(40, 80) - aotools.circle(8.2, 80)
 
 NSUBAPS = numpy.array([PUPIL_MASK.sum()]*NWFS)
 
-NCPU = 10
+NCPU = 60
 PART = 0
 
 
@@ -38,8 +39,8 @@ subapPos = numpy.tile(subapPos, (1,NWFS))
 
 print(subapPos)
 covMat = numpy.zeros(
-        (2*NSUBAPS.sum(), 2*NSUBAPS.sum()), dtype="float64")
-
+        (int(2*NSUBAPS.sum()), int(2*NSUBAPS.sum())))
+print("Init TOMO Object...")
 tomo = TomoAO.Tomo(
         NWFS, subapPos[0].copy(), subapPos[1].copy(),
         TEL_DIAM, OBS, NSUBAPS, NXSUBAPS, GSALT, GSTYPE,
@@ -47,5 +48,10 @@ tomo = TomoAO.Tomo(
         PUPILSHIFT, PUPILROT, PUPILMAG, SUBAPDIAM, NLAYERS,
         CN2, LAYERHEIGHTS, L0, NCPU, PART
         )
-
+print("Make Covariance Matrix...")
+t1 = time.time()
 covmat = tomo.covmat(covMat)
+dt = time.time() - t1
+
+
+print("Time taken: {}s".format(dt))

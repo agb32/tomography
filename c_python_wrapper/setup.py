@@ -6,10 +6,10 @@ TomoAO = Extension('TomoAO',
                     sources = ['./matcov_wrapper.c', './matcov_styc.c'],
                     include_dirs = ['/usr/local/include','/usr/local/include/fann','./src',
                         numpy.get_include()],
-                    library_dirs = ['.','/usr/local/lib'],
-                    libraries = [],
-                    extra_link_args = [],
-                    extra_compile_args = []
+                    library_dirs = ['.','/usr/local/lib', '/opt/intel/lib/mic'],
+                    libraries = ['iomp5'],
+                    extra_link_args = ['-fopenmp'],
+                    extra_compile_args = ['-std=c99', '-fopenmp']
                     )
 
 setup (name = 'TomoAO',
