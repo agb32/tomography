@@ -77,12 +77,11 @@ static PyObject* covmat(Tomo *self, PyObject *args)
 
     printf("Parsed the covmat args\n");
     // Get a pointer to the data from the numpy array
-    // if (PyArray_DTYPE(covmat_npy)->type_num != NPY_DOUBLE)
-    // {
-        printf("Cast covmat buffer to double...\n");
-        printf("Current dtype: %d\n", PyArray_DTYPE(covmat_npy)->type_num);
-        covmat_npy =(PyArrayObject*)PyArray_Cast(covmat_npy, NPY_DOUBLE);
-    // }
+    if (PyArray_DTYPE(covmat_npy)->type_num != NPY_DOUBLE || PyArray_ISCONTIGUOUS(covmat_npy)==0){// not float64 or contiguous?
+      printf("Cast covmat buffer to double...\n");
+      printf("Current dtype: %d\n", PyArray_DTYPE(covmat_npy)->type_num);
+      covmat_npy =(PyArrayObject*)PyArray_Cast(covmat_npy, NPY_DOUBLE);
+    }
 
     covmat_data = (double*) PyArray_DATA(covmat_npy);
 
