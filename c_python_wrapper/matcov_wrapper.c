@@ -44,7 +44,7 @@ static int Tomo_init(Tomo *self, PyObject *args, PyObject *kwds)
     self->tomoStruct.Nsubap = (long*) PyArray_DATA(PyArray_Cast(Nsubap, NPY_LONG));
     self->tomoStruct.Nssp = (long*) PyArray_DATA(PyArray_Cast(Nssp, NPY_LONG));
     self->tomoStruct.GsAlt = (double*) PyArray_DATA(PyArray_Cast(GsAlt, NPY_DOUBLE));
-    self->tomoStruct.type = (int*) PyArray_DATA(PyArray_Cast(type, NPY_INT));
+    self->tomoStruct.type = (int*) PyArray_DATA(PyArray_Cast(type, NPY_INT32));
     self->tomoStruct.alphaX = (double*) PyArray_DATA(PyArray_Cast(alphaX, NPY_DOUBLE));
     self->tomoStruct.alphaY = (double*) PyArray_DATA(PyArray_Cast(alphaY, NPY_DOUBLE));
     self->tomoStruct.XPup = (double*) PyArray_DATA(PyArray_Cast(XPup, NPY_DOUBLE));
