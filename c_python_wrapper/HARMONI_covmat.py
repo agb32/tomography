@@ -4,25 +4,25 @@ import aotools
 import TomoAO
 
 # AO Parameters
-TEL_DIAM = 39
-OBS = 8
+TEL_DIAM = 39.
+OBS = 8.
 
 NWFS = 7
-NSUBAPS = numpy.array([37]*NWFS)
-NXSUBAPS = numpy.array([80]*NWFS)
-SUBAPDIAM = TEL_DIAM/NXSUBAPS
-GSALT = numpy.array([0]*NWFS)
-GSPOS = numpy.array([ [.6, 0], [-0.6, 0], [.6, 0], [-0.6, 0], [.6, 0], [-0.6, 0] ,[0,0] ]) * (1./3600) * (numpy.pi/180.)
+NSUBAPS = numpy.array([37]*NWFS).astype(numpy.int64)
+NXSUBAPS = numpy.array([80]*NWFS).astype(numpy.int64)
+SUBAPDIAM = (TEL_DIAM/NXSUBAPS).astype(numpy.float64)
+GSALT = numpy.array([0.]*NWFS).astype(numpy.float32)
+GSPOS = (numpy.array([ [.6, 0], [-0.6, 0], [.6, 0], [-0.6, 0], [.6, 0], [-0.6, 0] ,[0,0] ]) * (1./3600) * (numpy.pi/180.)).astype(numpy.float64)
 
-GSTYPE = numpy.array([1]*NWFS) # all NGS
-PUPILSHIFT = numpy.array([0]*NWFS)
-PUPILMAG = numpy.array([80]*NWFS)
-PUPILROT = numpy.array([0]*NWFS)
+GSTYPE = numpy.array([1]*NWFS).astype(numpy.int32) # all NGS
+PUPILSHIFT = numpy.array([0]*NWFS).astype(numpy.float64)
+PUPILMAG = numpy.array([80]*NWFS).astype(numpy.float64)
+PUPILROT = numpy.array([0]*NWFS).astype(numpy.float64)
 
 NLAYERS = 10
-LAYERHEIGHTS = numpy.linspace(0,20000, NLAYERS)
-CN2 = numpy.array([10e-15]* NLAYERS)
-L0 = numpy.array([100.]*NLAYERS)
+LAYERHEIGHTS = numpy.linspace(0,20000, NLAYERS).astype(numpy.float64)
+CN2 = (numpy.array([10e-15]* NLAYERS)).astype(numpy.float64)
+L0 = (numpy.array([100.]*NLAYERS)).astype(numpy.float64)
 
 PUPIL_MASK = aotools.circle(40, 80) - aotools.circle(8.2, 80)
 
