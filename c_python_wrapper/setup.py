@@ -7,7 +7,8 @@ TomoAO = Extension('TomoAO',
                     include_dirs = ['/usr/local/include','/usr/local/include/fann','./src',
                         numpy.get_include()],
                     library_dirs = ['.','/usr/local/lib', '/opt/intel/lib/mic'],
-                    libraries = ['iomp5'],
+                    libraries = ['gomp'],#for gcc
+                   #libraries = ['iomp5'],#for icc
                     extra_link_args = ['-fopenmp'],
                     extra_compile_args = ['-std=c99', '-fopenmp']
                     )

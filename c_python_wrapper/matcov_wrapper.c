@@ -81,7 +81,7 @@ static PyObject* covmat(Tomo *self, PyObject *args)
     // {
         printf("Cast covmat buffer to double...\n");
         printf("Current dtype: %d\n", PyArray_DTYPE(covmat_npy)->type_num);
-        covmat_npy = PyArray_Cast(covmat_npy, NPY_DOUBLE);
+        covmat_npy =(PyArrayObject*)PyArray_Cast(covmat_npy, NPY_DOUBLE);
     // }
 
     covmat_data = (double*) PyArray_DATA(covmat_npy);

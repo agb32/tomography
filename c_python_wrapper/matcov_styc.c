@@ -123,7 +123,8 @@ matcov_styc(struct tomo_struct tomo, double *data) {
 // #pragma omp for nowait
 // #endif
       //Subaperture i
-      #pragma omp parallel private(j,l) num_threads(tomo.ncpu)
+#pragma omp parallel private(j,l) num_threads(tomo.ncpu)
+#pragma omp for nowait
       for (i = ioff; i < Ni; i++) {
 
         //Subaperture j
@@ -151,7 +152,6 @@ matcov_styc(struct tomo_struct tomo, double *data) {
 
 	      //Computation of the covariance on each layer
 	      double *cov;
-
 	      cov = compute_cov(du, dv, ac, ad, bc, bd, s1, s2,tomo.L0[l], units[l]);
 
 	      caa_xx += cov[0];	    

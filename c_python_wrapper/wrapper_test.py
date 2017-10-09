@@ -25,7 +25,7 @@ L0 = numpy.array([100.])
 
 PUPIL_MASK = aotools.circle(NXSUBAPS[0]/2., NXSUBAPS[0])
 
-NCPU = 10
+NCPU = 1#doesn't seem to work with >1.
 PART = 0
 
 
