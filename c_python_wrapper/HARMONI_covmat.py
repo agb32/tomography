@@ -8,7 +8,7 @@ TEL_DIAM = 39.
 OBS = 8.
 
 NWFS = 7
-NSUBAPS = numpy.array([37]*NWFS).astype(numpy.int64)
+
 NXSUBAPS = numpy.array([80]*NWFS).astype(numpy.int64)
 SUBAPDIAM = (TEL_DIAM/NXSUBAPS).astype(numpy.float64)
 GSALT = numpy.array([0.]*NWFS).astype(numpy.float32)

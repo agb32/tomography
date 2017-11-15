@@ -66,6 +66,7 @@ matcov_styc(struct tomo_struct tomo, double *data) {
   long *nf=0;
   long NL;
   long ts = cNw - 1;//Truth sensor : ts
+  long ncalc=0,tot=1;
 
   if (tomo.part == 0) { //Complete matrix
     m0 = 0;
@@ -76,7 +77,7 @@ matcov_styc(struct tomo_struct tomo, double *data) {
     NL=0; // very total number of slopes
     for (i = 0; i < cNw; i++)
       NL += tomo.Nsubap[i]*2;
-
+    ncalc=mf*(mf+1)/2;
   } else if (tomo.part == 1) { //Cmm
     m0 = 0;
     mf = cNw-1;
@@ -88,6 +89,7 @@ matcov_styc(struct tomo_struct tomo, double *data) {
       Nslopes += tomo.Nsubap[i];
     Nslopes *= 2;
     NL = Nslopes-2.*tomo.Nsubap[ts];
+    ncalc=mf*(mf+1)/2;
 
   } else if  (tomo.part == 3) { //Cpm
     m0 = 0;
@@ -95,6 +97,7 @@ matcov_styc(struct tomo_struct tomo, double *data) {
     n0 = cNw - 1;
     nf = &ts;
     NL = 2.*tomo.Nsubap[cNw - 1];
+    ncalc=mf*(ts-n0);
   }
 
   
@@ -116,8 +119,9 @@ matcov_styc(struct tomo_struct tomo, double *data) {
       for (l = 0; l < cNlayer; l++) {
         units[l] = kk * lambda2 * tomo.cn2[l];
       }
-
-      printf("Begin Covariance Matrix Calculation with %d threads\n", tomo.ncpu);
+      printf("Begin Covariance Matrix Calculation with %d threads (%ld/%ld)\n", tomo.ncpu,tot,ncalc);
+      printf("%ld %ld %ld %ld->%ld %ld->%ld\n",off_XY,off_YX,off_YY,ioff,Ni,joff,Nj);
+      tot++;
 // #ifdef USE_OPENMP
 // #pragma omp parallel private(j,l) num_threads(tomo.ncpu)
 // #pragma omp for nowait

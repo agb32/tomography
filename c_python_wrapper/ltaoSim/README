@@ -1,0 +1,31 @@
+
+
+****************************************
+LTAO Simulation generated.  This does a tomographic reconstruction on 1 DMs, and then projects the correction on-axis.
+
+To run in ltaoSim/, use (for MPI versions, adjust accordingly):
+python ltaoPoke.py params.py --param="this.tomoRecon.abortAfterPoke=1;this.tomoRecon.reconmxFilename='rmxTomo.fits'" --init="ndm=1"
+python projection.py 1
+python ltao.py params.py
+
+Or, more simply:
+sh run.sh
+
+Some notes about this simulation:
+It will first of all take an interaction matrix.
+This will then be inverted to give a control matrix, using a simple SVD.
+This will then be projected along the on-axis line of sight, to give the LTAO
+reconstruction matrix.
+This least-squares wavefront reconstructor will then be used for AO correction.
+
+The LGS tip-tilt signal is assumed valid, i.e. is used.  
+
+Several improvements are possible (left as an excercise for the user):
+Minimum variance wavefront reconstruction from the interaction matrix.
+Ignore the LGS tip-tilt signal, in the user-generated control matrix.
+Model-based reconstruction (e.g. FrIM, FEWHA, etc)
+
+Once you have a suitable reconstruction matrix, you do not need to rerun the
+poking or projection parts.
+
+    

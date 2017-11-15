@@ -1,0 +1,67 @@
+
+<aosim>
+<simSetup>
+<precode>
+if not "nopoke" in ctrl.userArgList:ctrl.doInitialPoke()
+</precode>
+
+<simulationObject cpu="(1, 1)" import="science.xinterp_dm" object="dm" pos="80,224" tag="16" shortname="xdm" pixmap="xinterp_dm.xpm" feedback="0" pyname="" groupshare="1" args="" connectto="[7]" connectfrom="[9]" textcol="red" idstr="dm0path$">
+<lines>
+[
+[],
+]
+</lines>
+<endlines>
+[
+[],
+[(129, 417), (129, 192)],
+]
+</endlines>
+<parentNames>
+['', '']
+</parentNames>
+<sharedTo>
+[]
+</sharedTo>
+</simulationObject>
+<simulationObject cpu="(1, 1)" import="science.wfscent" object="wfscent" pos="80,304" tag="7" shortname="wfscent" pixmap="wfscent.xpm" feedback="0" pyname="" groupshare="0" args="" connectto="[9]" connectfrom="[16]" textcol="red" idstr="$">
+<lines>
+[
+[],
+]
+</lines>
+<endlines>
+[
+[],
+]
+</endlines>
+<parentNames>
+['']
+</parentNames>
+<sharedTo>
+[]
+</sharedTo>
+</simulationObject>
+<simulationObject cpu="(1, 1)" import="science.tomoRecon" object="recon" pos="80,384" tag="9" shortname="tomoRecon" pixmap="xinterp_recon.xpm" feedback="1" pyname="" groupshare="0" args="" connectto="[16, ]" connectfrom="[7]" textcol="red" idstr="recon">
+<lines>
+[
+[(129, 417), (129, 192)],
+
+]
+</lines>
+<endlines>
+[
+[],
+]
+</endlines>
+<parentNames>
+['$']
+</parentNames>
+<sharedTo>
+[]
+</sharedTo>
+</simulationObject>
+<groupShare idstr="1,2,3," cpu="[]" coordlist="[(30, 104), (120, 104), (120, 344), (30, 344)]"/>
+
+</simSetup>
+</aosim>

@@ -1,2 +1,11 @@
 run make, then test with wrapper_test.py, or HARMONI_covmat.py
 (assuming you have plenty of memory).
+
+
+
+to test with dasp, need a daspbuilder scao and ltao simulations (3
+ngs).
+
+create a poke matrix for scao.
+Then create the covariance matrix.
+Then convert into atuator space using the rmx.
